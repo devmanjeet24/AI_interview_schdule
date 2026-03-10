@@ -1,37 +1,43 @@
-import { calendarReadTool } from "@/tools/calendarReadTool"
-import { calendarCreateTool } from "@/tools/calendarCreateTool"
+import {
+ getAllEvents,
+ createEvent
+} from "@/tools/calendarStore"
 
 export async function GET(){
 
- const events = calendarReadTool()
+ const events = getAllEvents()
 
- return Response.json({
-  events
- })
+ return Response.json({events})
 
 }
 
 export async function POST(req){
 
- const body = await req.json()
+ try{
 
- const {time} = body
+  const {time} = await req.json()
 
- if(!time){
+  if(!time){
+
+   return Response.json({
+    error:"Time required"
+   },{status:400})
+
+  }
+
+  const event = createEvent({time})
 
   return Response.json({
-   error:"Time required"
-  },{status:400})
+   message:"Interview scheduled",
+   event
+  })
+
+ }catch{
+
+  return Response.json({
+   error:"Server error"
+  },{status:500})
 
  }
-
- const event = calendarCreateTool({
-  time
- })
-
- return Response.json({
-  message:"Interview scheduled",
-  event
- })
 
 }
