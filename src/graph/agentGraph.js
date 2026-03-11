@@ -1,16 +1,54 @@
-import {intentAgent} from "@/agents/intentAgent"
-import {availabilityAgent} from "@/agents/availabilityAgent"
-import {schedulingAgent} from "@/agents/schedulingAgent"
+// import {intentAgent} from "@/agents/intentAgent"
+// import {availabilityAgent} from "@/agents/availabilityAgent"
+// import {schedulingAgent} from "@/agents/schedulingAgent"
+
+// export async function runGraph(message){
+
+//  const intent = await intentAgent(message)
+
+//  if(intent.includes("schedule")){
+
+//   const slots = availabilityAgent()
+
+//   const event = schedulingAgent(slots[0])
+
+//   return {
+//    agent:"Scheduling Agent",
+//    event
+//   }
+
+//  }
+
+//  return {
+//   agent:"Conversation Agent",
+//   reply:"Please provide preferred time"
+//  }
+
+// }
+
+
+import { intentAgent } from "@/agents/intentAgent"
+import { availabilityAgent } from "@/agents/availabilityAgent"
+import { schedulingAgent } from "@/agents/schedulingAgent"
 
 export async function runGraph(message){
 
- const intent = await intentAgent(message)
+  const intent = (await intentAgent(message))
+  .trim()
+  .toLowerCase()
 
- if(intent.includes("schedule")){
+ if(intent === "schedule"){ 
 
-  const slots = availabilityAgent()
+  const availability = await availabilityAgent()
 
-  const event = schedulingAgent(slots[0])
+  if(!availability.available){
+   return {
+    agent:"Availability Agent",
+    message:"No slots available"
+   }
+  }
+
+  const event = await schedulingAgent(availability.slot)
 
   return {
    agent:"Scheduling Agent",
@@ -19,9 +57,5 @@ export async function runGraph(message){
 
  }
 
- return {
-  agent:"Conversation Agent",
-  reply:"Please provide preferred time"
- }
-
+ return {message:"Unknown intent"}
 }

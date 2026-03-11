@@ -9,19 +9,7 @@ export async function POST(req){
   const {name,email,password} = await req.json()
 
   if(!name || !email || !password){
-
-   return Response.json({
-    error:"All fields required"
-   },{status:400})
-
-  }
-
-  if(password.length < 6){
-
-   return Response.json({
-    error:"Password must be 6 characters"
-   },{status:400})
-
+   return Response.json({error:"All fields required"},{status:400})
   }
 
   await connectDB()
@@ -29,11 +17,7 @@ export async function POST(req){
   const existing = await User.findOne({email})
 
   if(existing){
-
-   return Response.json({
-    error:"Email already exists"
-   },{status:400})
-
+   return Response.json({error:"Email already exists"},{status:400})
   }
 
   const hash = await bcrypt.hash(password,10)
@@ -45,15 +29,17 @@ export async function POST(req){
   })
 
   return Response.json({
-   message:"User created",
-   user
+   message:"User registered successfully",
+   user:{
+    id:user._id,
+    name:user.name,
+    email:user.email
+   }
   })
 
  }catch(err){
 
-  return Response.json({
-   error:"Server error"
-  },{status:500})
+  return Response.json({error:"Server error"},{status:500})
 
  }
 

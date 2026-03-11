@@ -6,19 +6,21 @@ const groq = new Groq({
 
 export async function askLLM(prompt){
 
- const res = await groq.chat.completions.create({
+ try{
 
-  model:"llama3-8b-8192",
+  const res = await groq.chat.completions.create({
+   model:"llama-3.1-8b-instant",
+   messages:[{role:"user",content:prompt}]
+  })
 
-  messages:[
-   {
-    role:"user",
-    content:prompt
-   }
-  ]
+  return res.choices[0].message.content
 
- })
+ }catch(err){
 
- return res.choices[0].message.content
+  console.error("Groq error:",err)
+
+  return "AI service temporarily unavailable"
+
+ }
 
 }

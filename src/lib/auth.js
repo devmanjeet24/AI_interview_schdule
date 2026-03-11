@@ -1,18 +1,20 @@
-import jwt from "jsonwebtoken"
+// import jwt from "jsonwebtoken"
 
-export function verifyToken(token){
+// export function verifyToken(token){
 
- try{
+//  try{
 
-  return jwt.verify(
-   token,
-   process.env.JWT_SECRET
-  )
+//   const decoded = jwt.verify(
+//    token,
+//    process.env.JWT_SECRET
+//   )
 
- }catch{
+//   return decoded
 
-  return null
+//  }catch(err){
 
- }
+//   return null
 
-}
+//  }
+
+// }

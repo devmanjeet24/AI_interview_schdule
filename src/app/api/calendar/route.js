@@ -1,11 +1,18 @@
+import { requireAuth } from "@/lib/authMiddleware"
 import {
  getAllEvents,
  createEvent
 } from "@/tools/calendarStore"
 
-export async function GET(){
+export async function GET(req){
 
- const events = getAllEvents()
+ const auth = requireAuth(req)
+
+ if(auth.error){
+  return Response.json({error:auth.error},{status:401})
+ }
+
+ const events = await getAllEvents()
 
  return Response.json({events})
 
@@ -13,31 +20,23 @@ export async function GET(){
 
 export async function POST(req){
 
- try{
+ const auth = requireAuth(req)
 
-  const {time} = await req.json()
-
-  if(!time){
-
-   return Response.json({
-    error:"Time required"
-   },{status:400})
-
-  }
-
-  const event = createEvent({time})
-
-  return Response.json({
-   message:"Interview scheduled",
-   event
-  })
-
- }catch{
-
-  return Response.json({
-   error:"Server error"
-  },{status:500})
-
+ if(auth.error){
+  return Response.json({error:auth.error},{status:401})
  }
+
+ const {time} = await req.json()
+
+ if(!time){
+  return Response.json({error:"Time required"},{status:400})
+ }
+
+ const event = await createEvent({time})
+
+ return Response.json({
+  message:"Interview scheduled",
+  event
+ })
 
 }

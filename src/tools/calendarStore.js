@@ -1,46 +1,58 @@
-import { v4 as uuid } from "uuid"
+import { connectDB } from "@/lib/db"
+import Event from "@/models/Event"
 
-let events = []
+export async function getAllEvents(){
 
-export function getAllEvents(){
+ await connectDB()
+
+ const events = await Event.find().sort({createdAt:-1})
+
  return events
+
 }
 
-export function getEventById(id){
- return events.find(e => e.id === id)
-}
+export async function getEventById(id){
 
-export function createEvent(data){
+ await connectDB()
 
- const event = {
-  id: uuid(),
-  time: data.time,
-  createdAt: new Date()
- }
-
- events.push(event)
+ const event = await Event.findById(id)
 
  return event
+
 }
 
-export function updateEvent(id,newTime){
+export async function createEvent(data){
 
- const event = events.find(e => e.id === id)
+ await connectDB()
 
- if(!event) return null
-
- event.time = newTime
+ const event = await Event.create({
+  time:data.time
+ })
 
  return event
+
 }
 
-export function deleteEvent(id){
+export async function updateEvent(id,newTime){
 
- const index = events.findIndex(e => e.id === id)
+ await connectDB()
 
- if(index === -1) return false
+ const event = await Event.findByIdAndUpdate(
+  id,
+  {time:newTime},
+  {new:true}
+ )
 
- events.splice(index,1)
+ return event
 
- return true
+}
+
+export async function deleteEvent(id){
+
+ await connectDB()
+
+ const event = await Event.findByIdAndDelete(id)
+
+ return event
+
 }

@@ -1,11 +1,11 @@
-import {calendarCreateTool} from "@/tools/calendarCreateTool"
+import { createEvent } from "@/tools/calendarStore"
 
-export function schedulingAgent(slot){
+export async function schedulingAgent(slot){
 
- return calendarCreateTool({
-
-  time:slot
-
+ const event = await createEvent({
+  time: slot
  })
+
+ return event
 
 }
