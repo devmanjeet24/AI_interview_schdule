@@ -26,7 +26,15 @@ export async function createEvent(data){
  await connectDB()
 
  const event = await Event.create({
-  time:data.time
+
+  candidateName:data.candidateName,
+  email:data.email,
+  interviewer:data.interviewer,
+  interviewType:data.interviewType,
+  meetingLink:data.meetingLink,
+  time:data.time,
+  status:"scheduled"
+
  })
 
  return event

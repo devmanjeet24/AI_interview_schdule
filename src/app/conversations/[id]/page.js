@@ -3,6 +3,7 @@
 import {useEffect,useState} from "react"
 import api from "@/lib/api"
 import {useParams} from "next/navigation"
+import DashboardLayout from "@/components/DashboardLayout"
 
 export default function ConversationHistory(){
 
@@ -26,25 +27,46 @@ export default function ConversationHistory(){
 
  return(
 
-  <div className="p-6">
+  <DashboardLayout>
 
-   <h1 className="text-xl font-bold mb-4">
-   Conversation {id}
-   </h1>
+   <div className="max-w-3xl mx-auto space-y-4">
 
-   {history.map((msg,i)=>(
+    <h1 className="text-2xl font-bold">
+     Conversation History
+    </h1>
 
-    <div key={i} className="border p-2 mb-2">
+    {history.map((msg,i)=>{
 
-     <b>{msg.role}</b>
+     const isUser = msg.role === "user"
 
-     <p>{msg.message}</p>
+     return(
 
-    </div>
+      <div
+       key={i}
+       className={`flex ${isUser ? "justify-end" : "justify-start"}`}
+      >
 
-   ))}
+       <div
+        className={`p-3 rounded-lg max-w-xs ${
+         isUser
+          ? "bg-black text-white"
+          : "bg-gray-100"
+        }`}
+       >
 
-  </div>
+        {msg.message}
+
+       </div>
+
+      </div>
+
+     )
+
+    })}
+
+   </div>
+
+  </DashboardLayout>
 
  )
 

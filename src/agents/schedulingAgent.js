@@ -1,9 +1,15 @@
 import { createEvent } from "@/tools/calendarStore"
+import { createMeetingLink } from "@/tools/meetingLinkTool"
 
-export async function schedulingAgent(slot){
+export async function schedulingAgent(data){
+
+ const meetingLink = createMeetingLink()
 
  const event = await createEvent({
-  time: slot
+
+  ...data,
+  meetingLink
+
  })
 
  return event

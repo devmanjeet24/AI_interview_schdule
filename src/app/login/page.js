@@ -1,83 +1,114 @@
 "use client"
 
-import {useForm} from "react-hook-form"
-import {useState} from "react"
+import { useForm } from "react-hook-form"
+import { useState } from "react"
 import api from "@/lib/api"
-import {useRouter} from "next/navigation"
-import {useAuth} from "@/hooks/useAuth"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/hooks/useAuth"
 import Loader from "@/components/Loader"
 import ErrorBox from "@/components/ErrorBox"
+import Link from "next/link"
 
-export default function Login(){
+export default function Login() {
 
- const {register,handleSubmit} = useForm()
+  const { register, handleSubmit } = useForm()
 
- const [loading,setLoading] = useState(false)
- const [error,setError] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
 
- const router = useRouter()
- const {login} = useAuth()
+  const router = useRouter()
+  const { login } = useAuth()
 
- const onSubmit = async(data)=>{
+  const onSubmit = async (data) => {
 
-  try{
+    try {
 
-   setLoading(true)
-   setError("")
+      setLoading(true)
+      setError("")
 
-   const res = await api.post("/auth/login",data)
+      const res = await api.post("/auth/login", data)
 
-   login(res.data)
+      login(res.data)
 
-   router.push("/dashboard")
+      router.push("/dashboard")
 
-  }catch(err){
+    } catch (err) {
 
-   setError(err.response?.data?.error || "Login failed")
+      setError(err.response?.data?.error || "Login failed")
 
-  }finally{
+    } finally {
 
-   setLoading(false)
+      setLoading(false)
+
+    }
 
   }
 
- }
+  return (
 
- return(
+    <main className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-600 flex items-center justify-center px-4">
 
-  <div className="max-w-md mx-auto mt-20">
+      <div className="bg-white/90 backdrop-blur-lg shadow-2xl rounded-2xl p-10 w-full max-w-md">
 
-   <h1 className="text-2xl font-bold mb-4">
-   Login
-   </h1>
+        <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">
+          Welcome Back
+        </h1>
 
-   <ErrorBox message={error}/>
+        <p className="text-center text-gray-500 mb-8">
+          Login to continue to AI Interview Scheduler
+        </p>
 
-   <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+        <ErrorBox message={error} />
 
-    <input
-     {...register("email")}
-     placeholder="Email"
-     className="border p-2 w-full"
-    />
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 
-    <input
-     {...register("password")}
-     type="password"
-     placeholder="Password"
-     className="border p-2 w-full"
-    />
+          <div>
+            <label className="text-sm text-gray-600">
+              Email
+            </label>
 
-    <button
-     className="bg-blue-600 text-white p-2 w-full"
-    >
-     {loading ? "Loading..." : "Login"}
-    </button>
+            <input
+              {...register("email")}
+              placeholder="Enter your email"
+              className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
 
-   </form>
+          <div>
+            <label className="text-sm text-gray-600">
+              Password
+            </label>
 
-  </div>
+            <input
+              {...register("password")}
+              type="password"
+              placeholder="Enter your password"
+              className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
 
- )
+          <button
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg transition duration-200 flex justify-center items-center"
+          >
+            {loading ? "Loading..." : "Login"}
+          </button>
+
+        </form>
+
+        <p className="text-sm text-center text-gray-500 mt-6">
+          Don't have an account?{" "}
+          <Link
+            href="/register"
+            className="text-indigo-600 font-medium hover:underline"
+          >
+            Register
+          </Link>
+        </p>
+
+      </div>
+
+    </main>
+
+  )
 
 }
