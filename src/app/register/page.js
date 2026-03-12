@@ -1,110 +1,55 @@
 "use client"
 
-import { useForm } from "react-hook-form"
-import { useRouter } from "next/navigation"
+import {useForm} from "react-hook-form"
+import api from "@/lib/api"
+import {useRouter} from "next/navigation"
+import {useState} from "react"
+import ErrorBox from "@/components/ErrorBox"
 
 export default function Register(){
 
+ const {register,handleSubmit} = useForm()
+
  const router = useRouter()
 
- const {
-  register,
-  handleSubmit,
-  formState:{errors,isSubmitting}
- } = useForm()
+ const [error,setError] = useState("")
 
- async function onSubmit(data){
+ const onSubmit = async(data)=>{
 
-  const res = await fetch("/api/auth/register",{
-   method:"POST",
-   headers:{
-    "Content-Type":"application/json"
-   },
-   body:JSON.stringify(data)
-  })
+  try{
 
-  const result = await res.json()
+   await api.post("/auth/register",data)
 
-  if(!res.ok){
-   alert(result.error)
-   return
+   router.push("/login")
+
+  }catch(err){
+
+   setError(err.response?.data?.error)
+
   }
-
-  alert("Registration successful")
-
-  router.push("/login")
 
  }
 
  return(
 
-  <div className="flex flex-col items-center justify-center min-h-screen">
+  <div className="max-w-md mx-auto mt-20">
 
-   <h1 className="text-2xl font-bold mb-5">
-    Register
+   <h1 className="text-2xl font-bold mb-4">
+   Register
    </h1>
 
-   <form
-    onSubmit={handleSubmit(onSubmit)}
-    className="flex flex-col gap-3 w-80"
-   >
+   <ErrorBox message={error}/>
 
-    <input
-     placeholder="Name"
-     className="border p-2"
-     {...register("name",{
-      required:"Name required"
-     })}
-    />
+   <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
 
-    {errors.name && (
-     <p className="text-red-500 text-sm">
-      {errors.name.message}
-     </p>
-    )}
+    <input {...register("name")} placeholder="Name" className="border p-2 w-full"/>
 
-    <input
-     placeholder="Email"
-     className="border p-2"
-     {...register("email",{
-      required:"Email required",
-      pattern:{
-       value:/^\S+@\S+$/i,
-       message:"Invalid email"
-      }
-     })}
-    />
+    <input {...register("email")} placeholder="Email" className="border p-2 w-full"/>
 
-    {errors.email && (
-     <p className="text-red-500 text-sm">
-      {errors.email.message}
-     </p>
-    )}
+    <input {...register("password")} type="password" placeholder="Password" className="border p-2 w-full"/>
 
-    <input
-     type="password"
-     placeholder="Password"
-     className="border p-2"
-     {...register("password",{
-      required:"Password required",
-      minLength:{
-       value:6,
-       message:"Minimum 6 characters"
-      }
-     })}
-    />
-
-    {errors.password && (
-     <p className="text-red-500 text-sm">
-      {errors.password.message}
-     </p>
-    )}
-
-    <button
-     disabled={isSubmitting}
-     className="bg-blue-500 text-white p-2"
-    >
-     {isSubmitting ? "Registering..." : "Register"}
+    <button className="bg-green-600 text-white p-2 w-full">
+     Register
     </button>
 
    </form>
@@ -112,5 +57,4 @@ export default function Register(){
   </div>
 
  )
-
 }

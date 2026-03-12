@@ -1,34 +1,3 @@
-// import { verifyToken } from "./auth"
-
-// export function requireAuth(req){
-
-//  const authHeader = req.headers.get("authorization")
-
-//  if(!authHeader){
-//   return {error:"Authorization header missing"}
-//  }
-
-//  if(!authHeader.startsWith("Bearer ")){
-//   return {error:"Invalid authorization format"}
-//  }
-
-//  const token = authHeader.split(" ")[1]
-
-//  if(!token){
-//   return {error:"Token missing"}
-//  }
-
-//  const user = verifyToken(token)
-
-//  if(!user){
-//   return {error:"Invalid token"}
-//  }
-
-//  return {user}
-
-// }
-
-
 import jwt from "jsonwebtoken"
 
 const ACCESS_SECRET = process.env.JWT_SECRET

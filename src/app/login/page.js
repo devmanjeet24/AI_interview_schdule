@@ -1,88 +1,77 @@
 "use client"
 
-import { useForm } from "react-hook-form"
-import { useRouter } from "next/navigation"
+import {useForm} from "react-hook-form"
+import {useState} from "react"
+import api from "@/lib/api"
+import {useRouter} from "next/navigation"
+import {useAuth} from "@/hooks/useAuth"
+import Loader from "@/components/Loader"
+import ErrorBox from "@/components/ErrorBox"
 
 export default function Login(){
 
+ const {register,handleSubmit} = useForm()
+
+ const [loading,setLoading] = useState(false)
+ const [error,setError] = useState("")
+
  const router = useRouter()
+ const {login} = useAuth()
 
- const {
-  register,
-  handleSubmit,
-  formState:{errors,isSubmitting}
- } = useForm()
+ const onSubmit = async(data)=>{
 
- async function onSubmit(data){
+  try{
 
-  const res = await fetch("/api/auth/login",{
-   method:"POST",
-   headers:{
-    "Content-Type":"application/json"
-   },
-   body:JSON.stringify(data)
-  })
+   setLoading(true)
+   setError("")
 
-  const result = await res.json()
+   const res = await api.post("/auth/login",data)
 
-  if(!res.ok){
-   alert(result.error)
-   return
+   login(res.data)
+
+   router.push("/dashboard")
+
+  }catch(err){
+
+   setError(err.response?.data?.error || "Login failed")
+
+  }finally{
+
+   setLoading(false)
+
   }
-
-  localStorage.setItem("token",result.token)
-
-  router.push("/dashboard")
 
  }
 
  return(
 
-  <div className="flex flex-col items-center justify-center min-h-screen">
+  <div className="max-w-md mx-auto mt-20">
 
-   <h1 className="text-2xl font-bold mb-5">
-    Login
+   <h1 className="text-2xl font-bold mb-4">
+   Login
    </h1>
 
-   <form
-    onSubmit={handleSubmit(onSubmit)}
-    className="flex flex-col gap-3 w-80"
-   >
+   <ErrorBox message={error}/>
+
+   <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
 
     <input
+     {...register("email")}
      placeholder="Email"
-     className="border p-2"
-     {...register("email",{
-      required:"Email required"
-     })}
+     className="border p-2 w-full"
     />
 
-    {errors.email && (
-     <p className="text-red-500 text-sm">
-      {errors.email.message}
-     </p>
-    )}
-
     <input
+     {...register("password")}
      type="password"
      placeholder="Password"
-     className="border p-2"
-     {...register("password",{
-      required:"Password required"
-     })}
+     className="border p-2 w-full"
     />
 
-    {errors.password && (
-     <p className="text-red-500 text-sm">
-      {errors.password.message}
-     </p>
-    )}
-
     <button
-     disabled={isSubmitting}
-     className="bg-green-500 text-white p-2"
+     className="bg-blue-600 text-white p-2 w-full"
     >
-     {isSubmitting ? "Logging..." : "Login"}
+     {loading ? "Loading..." : "Login"}
     </button>
 
    </form>

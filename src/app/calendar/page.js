@@ -1,6 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import {useEffect,useState} from "react"
+import api from "@/lib/api"
+import Loader from "@/components/Loader"
 
 export default function Calendar(){
 
@@ -9,33 +11,53 @@ export default function Calendar(){
 
  useEffect(()=>{
 
-  fetch("/api/calendar")
-   .then(res=>res.json())
-   .then(data=>{
-    setEvents(data.events)
-    setLoading(false)
-   })
+  fetchEvents()
 
  },[])
 
- if(loading) return <p>Loading...</p>
+ const fetchEvents = async()=>{
+
+  const res = await api.get("/calendar")
+
+  setEvents(res.data.events)
+
+  setLoading(false)
+
+ }
+
+ const deleteEvent = async(id)=>{
+
+  await api.delete(`/calendar/${id}`)
+
+  fetchEvents()
+
+ }
+
+ if(loading) return <Loader/>
 
  return(
 
-  <div>
+  <div className="p-6">
 
-   <h1>Interview Calendar</h1>
-
-   {events.length === 0 && (
-    <p>No interviews scheduled</p>
-   )}
+   <h1 className="text-xl font-bold mb-4">
+   Calendar Events
+   </h1>
 
    {events.map(e=>(
-    <div key={e.id}>
+
+    <div key={e._id} className="border p-3 mb-2">
 
      <p>{e.time}</p>
 
+     <button
+      onClick={()=>deleteEvent(e._id)}
+      className="bg-red-600 text-white px-2 py-1"
+     >
+      Delete
+     </button>
+
     </div>
+
    ))}
 
   </div>
