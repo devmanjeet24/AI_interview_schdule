@@ -14,51 +14,97 @@ import {
 
 import { Button } from "@/components/ui/button"
 
-import { CalendarDays, Clock } from "lucide-react"
+import {
+ CalendarDays,
+ Clock,
+ User,
+ Mail,
+ Briefcase,
+ Video
+} from "lucide-react"
+
+function formatDate(date){
+
+ return new Date(date).toLocaleString("en-IN",{
+  weekday:"short",
+  day:"numeric",
+  month:"short",
+  year:"numeric",
+  hour:"2-digit",
+  minute:"2-digit"
+ })
+
+}
 
 export default function Calendar(){
 
  const [events,setEvents] = useState([])
  const [loading,setLoading] = useState(true)
 
+ const [rescheduleId,setRescheduleId] = useState(null)
+ const [newTime,setNewTime] = useState("")
+
  useEffect(()=>{
-
   fetchEvents()
-
  },[])
 
  const fetchEvents = async()=>{
 
-  const res = await api.get("/calendar")
+  try{
 
-  setEvents(res.data.events)
+   const res = await api.get("/calendar")
 
-  setLoading(false)
+   setEvents(res.data.events || [])
+
+  }catch(err){
+
+   console.error("Failed to fetch events",err)
+
+  }finally{
+
+   setLoading(false)
+
+  }
 
  }
 
  const deleteEvent = async(id)=>{
 
-  await api.delete(`/calendar/${id}`)
+  try{
 
-  fetchEvents()
+   await api.delete(`/calendar/${id}`)
+
+   fetchEvents()
+
+  }catch(err){
+
+   console.error("Delete failed",err)
+
+  }
 
  }
 
- // format date for UI
+ const rescheduleEvent = async()=>{
 
- const formatDate = (dateString)=>{
+  if(!newTime) return
 
-  const date = new Date(dateString)
+  try{
 
-  return date.toLocaleString("en-IN",{
-   weekday:"short",
-   year:"numeric",
-   month:"short",
-   day:"numeric",
-   hour:"2-digit",
-   minute:"2-digit"
-  })
+   await api.post("/reschedule",{
+    eventId:rescheduleId,
+    newTime
+   })
+
+   setRescheduleId(null)
+   setNewTime("")
+
+   fetchEvents()
+
+  }catch(err){
+
+   console.error("Reschedule failed",err)
+
+  }
 
  }
 
@@ -70,8 +116,6 @@ export default function Calendar(){
 
    <div className="space-y-6">
 
-    {/* Header */}
-
     <div>
 
      <h1 className="text-2xl font-bold">
@@ -79,12 +123,10 @@ export default function Calendar(){
      </h1>
 
      <p className="text-muted-foreground">
-      Manage and review your scheduled interviews
+      Manage all scheduled interviews
      </p>
 
     </div>
-
-    {/* Empty state */}
 
     {events.length === 0 && (
 
@@ -100,8 +142,6 @@ export default function Calendar(){
 
     )}
 
-    {/* Events grid */}
-
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 
      {events.map(e=>(
@@ -111,7 +151,7 @@ export default function Calendar(){
        <CardHeader className="flex flex-row items-center justify-between">
 
         <CardTitle className="text-sm font-medium">
-         Interview Slot
+         Interview Scheduled
         </CardTitle>
 
         <CalendarDays className="w-5 h-5 text-muted-foreground"/>
@@ -120,34 +160,128 @@ export default function Calendar(){
 
        <CardContent className="space-y-4">
 
-        {/* Date */}
+        {/* Candidate */}
+
+        <div className="flex items-center gap-2 text-sm font-medium">
+
+         <User className="w-4 h-4"/>
+
+         {e.candidateName}
+
+        </div>
+
+        {/* Email */}
+
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+
+         <Mail className="w-4 h-4"/>
+
+         {e.email}
+
+        </div>
+
+        {/* Interviewer */}
+
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+
+         <User className="w-4 h-4"/>
+
+         Interviewer: {e.interviewer}
+
+        </div>
+
+        {/* Interview Type */}
+
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+
+         <Briefcase className="w-4 h-4"/>
+
+         {e.interviewType}
+
+        </div>
+
+        {/* Time */}
 
         <div className="flex items-center gap-2 text-sm">
 
-         <Clock className="w-4 h-4 text-muted-foreground"/>
+         <Clock className="w-4 h-4"/>
 
          {formatDate(e.time)}
 
         </div>
 
-        {/* Description */}
+        {/* Status */}
 
-        <p className="text-sm text-muted-foreground">
+        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
 
-         This interview slot has been reserved in your calendar.
-         You can reschedule or cancel it anytime if needed.
+         {e.status}
 
-        </p>
+        </span>
+
+        {/* Meeting Link */}
+
+        {e.meetingLink && (
+
+         <a
+          href={e.meetingLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 text-blue-600 text-sm underline"
+         >
+
+          <Video className="w-4 h-4"/>
+
+          Join Meeting
+
+         </a>
+
+        )}
+
+        {/* Reschedule UI */}
+
+        {rescheduleId === e._id && (
+
+         <div className="space-y-2">
+
+          <input
+           type="datetime-local"
+           value={newTime}
+           onChange={(e)=>setNewTime(e.target.value)}
+           className="border rounded p-2 w-full"
+          />
+
+          <Button
+           size="sm"
+           onClick={rescheduleEvent}
+          >
+           Confirm Reschedule
+          </Button>
+
+         </div>
+
+        )}
 
         {/* Actions */}
 
-        <Button
-         variant="destructive"
-         size="sm"
-         onClick={()=>deleteEvent(e._id)}
-        >
-         Cancel Interview
-        </Button>
+        <div className="flex gap-2">
+
+         <Button
+          variant="outline"
+          size="sm"
+          onClick={()=>setRescheduleId(e._id)}
+         >
+          Reschedule
+         </Button>
+
+         <Button
+          variant="destructive"
+          size="sm"
+          onClick={()=>deleteEvent(e._id)}
+         >
+          Cancel
+         </Button>
+
+        </div>
 
        </CardContent>
 

@@ -20,6 +20,7 @@ export function memoryTool(action,id,data){
 
   return Object.keys(memory).map(id => ({
    id,
+   preview: memory[id][0]?.message,
    messages: memory[id]
   }))
 

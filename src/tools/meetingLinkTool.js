@@ -1,7 +1,9 @@
+import { v4 as uuid } from "uuid"
+
 export function createMeetingLink(){
 
- const id = Math.random().toString(36).substring(2,10)
+ const id = uuid().slice(0,8)
 
- return `https://meet.example.com/${id}`
+ return `https://meet.google.com/${id}`
 
 }

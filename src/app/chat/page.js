@@ -1,173 +1,274 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import api from "@/lib/api"
 import DashboardLayout from "@/components/DashboardLayout"
 
-export default function Chat(){
+function formatDate(date) {
 
- const [message,setMessage] = useState("")
- const [messages,setMessages] = useState([])
- const [loading,setLoading] = useState(false)
- const [conversationId,setConversationId] = useState(null)
+    return new Date(date).toLocaleString("en-IN", {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    })
 
- const sendMessage = async()=>{
+}
 
-  if(!message.trim()) return
 
-  const userText = message
 
-  const userMsg = {
-   role:"user",
-   text:userText
-  }
+export default function Chat() {
 
-  setMessages(prev => [...prev,userMsg])
+    const [message, setMessage] = useState("")
+    const [messages, setMessages] = useState([])
+    const [loading, setLoading] = useState(false)
+    const [conversationId, setConversationId] = useState(null)
 
-  setMessage("")
-  setLoading(true)
+    const startNewConversation = () => {
 
-  try{
+ const newId = crypto.randomUUID()
 
-   const res = await api.post("/chat",{
-    message:userText,
-    conversationId
-   })
+ setConversationId(newId)
 
-   const data = res.data
+ localStorage.setItem("conversationId", newId)
 
-   // IMPORTANT: save conversationId returned from API
-   if(!conversationId && data.conversationId){
-    setConversationId(data.conversationId)
-   }
+ setMessages([])
 
-   const aiMsg = {
-    role:"assistant",
-    agent:data.agent || "Assistant",
-    text:data.message || "",
-    event:data.event || null
-   }
+}
 
-   setMessages(prev => [...prev,aiMsg])
+    const bottomRef = useRef(null)
 
-  }catch(err){
+    // AUTO SCROLL EFFECT
+    useEffect(() => {
+        bottomRef.current?.scrollIntoView({ behavior: "smooth" })
+    }, [messages, loading])
 
-   setMessages(prev => [
-    ...prev,
-    {
-     role:"assistant",
-     text:"Something went wrong"
+    useEffect(() => {
+
+        const savedId = localStorage.getItem("conversationId")
+
+        if (savedId) {
+            setConversationId(savedId)
+            loadHistory(savedId)
+        }
+
+    }, [])
+
+    const loadHistory = async (id) => {
+
+        try {
+
+            const res = await api.get(`/conversation/${id}`)
+
+            const history = res.data.history.map(m => ({
+                role: m.role,
+                text: m.message
+            }))
+
+            setMessages(history)
+
+        } catch (err) {
+
+            console.error("Failed to load history", err)
+
+        }
+
     }
-   ])
 
-  }finally{
+    const sendMessage = async () => {
 
-   setLoading(false)
+        if (!message.trim()) return
 
-  }
+        const userText = message
 
- }
+        const userMsg = {
+            role: "user",
+            text: userText
+        }
 
- return(
+        setMessages(prev => [...prev, userMsg])
 
-  <DashboardLayout>
+        setMessage("")
+        setLoading(true)
 
-   <div className="max-w-3xl mx-auto flex flex-col h-[80vh]">
+        try {
 
-    <h1 className="text-2xl font-bold mb-4">
-     AI Assistant
-    </h1>
+            const res = await api.post("/chat", {
+                message: userText,
+                conversationId
+            })
 
-    {/* Chat messages */}
+            const data = res.data
 
-    <div className="flex-1 overflow-y-auto space-y-4 border p-4 rounded-lg bg-white">
+            if (!conversationId && data.conversationId) {
 
-     {messages.map((msg,i)=>{
+                setConversationId(data.conversationId)
 
-      if(msg.role === "user"){
+                localStorage.setItem("conversationId", data.conversationId)
 
-       return(
+            }
 
-        <div key={i} className="flex justify-end">
+            const aiMsg = {
+                role: "assistant",
+                agent: data.agent || "Assistant",
+                text: data.message || "",
+                event: data.event || null
+            }
 
-         <div className="bg-black text-white p-3 rounded-lg max-w-xs">
-          {msg.text}
-         </div>
+            setMessages(prev => [...prev, aiMsg])
 
-        </div>
+        } catch (err) {
 
-       )
+            setMessages(prev => [
+                ...prev,
+                {
+                    role: "assistant",
+                    text: "Something went wrong"
+                }
+            ])
 
-      }
+        } finally {
 
-      return(
+            setLoading(false)
 
-       <div key={i} className="flex flex-col">
+        }
 
-        <span className="text-xs text-gray-500 mb-1">
-         {msg.agent || "Assistant"}
-        </span>
+    }
 
-        <div className="bg-gray-100 p-3 rounded-lg max-w-md">
+    return (
 
-         {msg.text}
+        <DashboardLayout>
 
-         {msg.event && (
+            <div className="max-w-3xl mx-auto flex flex-col h-[80vh]">
 
-          <div className="mt-3 p-3 border rounded bg-white">
+               <div className="flex items-center justify-between mb-4">
 
-           <p className="text-sm font-semibold">
-            Interview Scheduled
-           </p>
+ <h1 className="text-2xl font-bold">
+  AI Assistant
+ </h1>
 
-           <p className="text-sm">
-            Time: {msg.event.time}
-           </p>
+ <button
+  onClick={startNewConversation}
+  className="text-sm px-3 py-1 border rounded-md"
+ >
+  New Conversation
+ </button>
 
-          </div>
+</div>
 
-         )}
+                {/* Chat messages */}
 
-        </div>
+                <div className="flex-1 overflow-y-auto space-y-4 border p-4 rounded-lg bg-white">
 
-       </div>
+                    {messages.map((msg, i) => {
 
-      )
+                        if (msg.role === "user") {
 
-     })}
+                            return (
 
-     {loading && (
-      <div className="text-gray-500 text-sm">
-       AI is typing...
-      </div>
-     )}
+                                <div key={i} className="flex justify-end">
 
-    </div>
+                                    <div className="bg-black text-white p-3 rounded-lg max-w-xs">
+                                        {msg.text}
+                                    </div>
 
-    {/* Input */}
+                                </div>
 
-    <div className="flex gap-2 mt-4">
+                            )
 
-     <input
-      value={message}
-      onChange={(e)=>setMessage(e.target.value)}
-      placeholder="Ask something..."
-      className="flex-1 border p-3 rounded-lg"
-     />
+                        }
 
-     <button
-      onClick={sendMessage}
-      className="bg-black text-white px-4 rounded-lg"
-     >
-      Send
-     </button>
+                        return (
 
-    </div>
+                            <div key={i} className="flex flex-col">
 
-   </div>
+                                <span className="text-xs text-gray-500 mb-1">
+                                    {msg.agent || "Assistant"}
+                                </span>
 
-  </DashboardLayout>
+                                <div className="bg-gray-100 p-3 rounded-lg max-w-md">
 
- )
+                                    {msg.text}
+
+                                    {msg.event && (
+
+ <div className="mt-3 p-3 border rounded bg-white space-y-2">
+
+  <p className="text-sm font-semibold">
+   Interview Scheduled
+  </p>
+
+  <p className="text-sm">
+   Time: {msg.event.time}
+  </p>
+
+  {msg.event.meetingLink && (
+
+   <a
+    href={msg.event.meetingLink}
+    target="_blank"
+    className="text-blue-600 text-sm underline"
+   >
+    Join Meeting
+   </a>
+
+  )}
+
+ </div>
+
+)}
+
+                                </div>
+
+                            </div>
+
+                        )
+
+                    })}
+
+                    {loading && (
+                        <div className="text-gray-500 text-sm">
+                            AI is typing...
+                        </div>
+                    )}
+
+                    {/* SCROLL TARGET */}
+                    <div ref={bottomRef}></div>
+
+                </div>
+
+                {/* Input */}
+
+                <div className="flex gap-2 mt-4">
+
+                    <input
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                e.preventDefault()
+                                sendMessage()
+                            }
+                        }}
+                        placeholder="Ask something..."
+                        className="flex-1 border p-3 rounded-lg"
+                    />
+
+                    <button
+                        onClick={sendMessage}
+                        className="bg-black text-white px-4 rounded-lg"
+                    >
+                        Send
+                    </button>
+
+                </div>
+
+            </div>
+
+        </DashboardLayout>
+
+    )
 
 }
