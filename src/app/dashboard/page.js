@@ -1,18 +1,10 @@
 "use client"
 
 import { useEffect, useState } from "react"
-
 import api from "@/lib/api"
 
 import DashboardLayout from "@/components/DashboardLayout"
 import Loader from "@/components/Loader"
-
-import {
- Card,
- CardContent,
- CardHeader,
- CardTitle
-} from "@/components/ui/card"
 
 import {
  CalendarDays,
@@ -59,175 +51,184 @@ export default function Dashboard(){
   )
  }
 
- // total interviews
-
  const total = events.length
-
- // upcoming interviews
 
  const now = new Date()
 
  const upcoming = events.filter(e => new Date(e.time) > now)
 
- // available slots
-
- const availableSlots = 3 // from availability tool
+ const availableSlots = 3
 
  return(
 
   <DashboardLayout>
 
-   <div className="space-y-10">
+   <main className="relative min-h-screen bg-[#0f172a] overflow-hidden px-6 py-8 dashboard">
 
-    {/* Header */}
+    {/* animated blobs */}
 
-    <div>
+    <div className="blob absolute top-[-200px] left-[-200px] w-[500px] h-[500px] bg-purple-600 opacity-30 blur-[180px] rounded-full"></div>
 
-     <h1 className="text-3xl font-bold">
-      Dashboard
-     </h1>
+    <div className="blob absolute bottom-[-200px] right-[-200px] w-[500px] h-[500px] bg-indigo-600 opacity-30 blur-[180px] rounded-full"></div>
 
-     <p className="text-muted-foreground">
-      Overview of your interview scheduling activity
-     </p>
+    <div className="blob absolute top-[40%] left-[40%] w-[350px] h-[350px] bg-blue-600 opacity-20 blur-[160px] rounded-full"></div>
 
-    </div>
+    <div className="relative z-10 space-y-10">
 
-    {/* Stats */}
+     {/* header */}
 
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+     <div>
 
-     {/* Total Interviews */}
+      <h1 className="text-3xl font-bold text-white">
+       Dashboard
+      </h1>
 
-     <Card className="hover:shadow-md transition">
+      <p className="text-gray-400">
+       Overview of your interview scheduling activity
+      </p>
 
-      <CardHeader className="flex flex-row items-center justify-between">
+     </div>
 
-       <CardTitle className="text-sm font-medium">
-        Total Interviews
-       </CardTitle>
 
-       <CalendarDays className="h-5 w-5 text-muted-foreground"/>
+     {/* stats */}
 
-      </CardHeader>
+     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 
-      <CardContent>
+      {/* total */}
 
-       <div className="text-3xl font-bold">
-        {total}
+      <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 hover:-translate-y-1 transition shadow-xl">
+
+       <div className="flex justify-between items-center">
+
+        <p className="text-sm text-gray-300">
+         Total Interviews
+        </p>
+
+        <div className="p-2 rounded-lg bg-indigo-500/20">
+
+         <CalendarDays className="text-indigo-400"/>
+
+        </div>
+
        </div>
 
-       <p className="text-xs text-muted-foreground">
+       <h2 className="text-3xl font-bold text-white mt-4">
+        {total}
+       </h2>
+
+       <p className="text-xs text-gray-400 mt-1">
         Interviews scheduled in your system
        </p>
 
-      </CardContent>
+      </div>
 
-     </Card>
 
-     {/* Upcoming */}
+      {/* upcoming */}
 
-     <Card className="hover:shadow-md transition">
+      <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 hover:-translate-y-1 transition shadow-xl">
 
-      <CardHeader className="flex flex-row items-center justify-between">
+       <div className="flex justify-between items-center">
 
-       <CardTitle className="text-sm font-medium">
-        Upcoming Interviews
-       </CardTitle>
+        <p className="text-sm text-gray-300">
+         Upcoming Interviews
+        </p>
 
-       <Clock className="h-5 w-5 text-muted-foreground"/>
+        <div className="p-2 rounded-lg bg-purple-500/20">
 
-      </CardHeader>
+         <Clock className="text-purple-400"/>
 
-      <CardContent>
+        </div>
 
-       <div className="text-3xl font-bold">
-        {upcoming.length}
        </div>
 
-       <p className="text-xs text-muted-foreground">
+       <h2 className="text-3xl font-bold text-white mt-4">
+        {upcoming.length}
+       </h2>
+
+       <p className="text-xs text-gray-400 mt-1">
         Interviews scheduled in the future
        </p>
 
-      </CardContent>
+      </div>
 
-     </Card>
 
-     {/* Available Slots */}
+      {/* slots */}
 
-     <Card className="hover:shadow-md transition">
+      <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 hover:-translate-y-1 transition shadow-xl">
 
-      <CardHeader className="flex flex-row items-center justify-between">
+       <div className="flex justify-between items-center">
 
-       <CardTitle className="text-sm font-medium">
-        Available Slots
-       </CardTitle>
+        <p className="text-sm text-gray-300">
+         Available Slots
+        </p>
 
-       <CheckCircle className="h-5 w-5 text-muted-foreground"/>
+        <div className="p-2 rounded-lg bg-green-500/20">
 
-      </CardHeader>
+         <CheckCircle className="text-green-400"/>
 
-      <CardContent>
+        </div>
 
-       <div className="text-3xl font-bold">
-        {availableSlots}
        </div>
 
-       <p className="text-xs text-muted-foreground">
+       <h2 className="text-3xl font-bold text-white mt-4">
+        {availableSlots}
+       </h2>
+
+       <p className="text-xs text-gray-400 mt-1">
         Interview slots currently available
        </p>
 
-      </CardContent>
+      </div>
 
-     </Card>
+     </div>
 
-    </div>
 
-    {/* Recent Interviews */}
+     {/* recent interviews */}
 
-    <div>
+     <div>
 
-     <h2 className="text-xl font-semibold mb-4">
-      Recent Interviews
-     </h2>
+      <h2 className="text-xl font-semibold text-white mb-4">
+       Recent Interviews
+      </h2>
 
-     <div className="space-y-4">
+      <div className="space-y-4">
 
-      {events.slice(0,5).map(event => (
+       {events.slice(0,5).map(event => (
 
-       <Card key={event._id}>
-
-        <CardContent className="p-4 flex justify-between items-center">
+        <div
+         key={event._id}
+         className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-4 flex justify-between items-center hover:bg-white/20 transition"
+        >
 
          <div>
 
-          <p className="font-medium">
+          <p className="font-medium text-white">
            {event.candidateName || "Candidate"}
           </p>
 
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-gray-400">
            {new Date(event.time).toLocaleString()}
           </p>
 
          </div>
 
-         <div className="text-sm text-muted-foreground">
+         <div className="text-sm text-indigo-400">
 
           {event.status || "Scheduled"}
 
          </div>
 
-        </CardContent>
+        </div>
 
-       </Card>
+       ))}
 
-      ))}
+      </div>
 
      </div>
 
     </div>
 
-   </div>
+   </main>
 
   </DashboardLayout>
 

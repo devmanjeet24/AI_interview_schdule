@@ -1,125 +1,144 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
+import { PanelLeftClose, PanelLeftOpen } from "lucide-react"
+
 import {
-    LayoutDashboard,
-    Calendar,
-    MessageSquare,
-    Clock,
-    MessagesSquare,
-    LogOut
-} from "lucide-react"
+  House,
+  CalendarBlank,
+  ChatCircleDots,
+  Clock,
+  Chats,
+  SignOut
+} from "@phosphor-icons/react"
+
 import { useAuth } from "@/hooks/useAuth"
 
 const links = [
-    {
-        name: "Dashboard",
-        href: "/dashboard",
-        icon: LayoutDashboard
-    },
-    {
-        name: "Calendar",
-        href: "/calendar",
-        icon: Calendar
-    },
-    {
-        name: "Chat",
-        href: "/chat",
-        icon: MessageSquare
-    },
-    {
-        name: "Availability",
-        href: "/availability",
-        icon: Clock
-    },
-    {
-        name: "Conversations",
-        href: "/conversations",
-        icon: MessagesSquare
-    }
+  { name: "Dashboard", href: "/dashboard", icon: House },
+  { name: "Calendar", href: "/calendar", icon: CalendarBlank },
+  { name: "Chat", href: "/chat", icon: ChatCircleDots },
+  { name: "Availability", href: "/availability", icon: Clock },
+  { name: "Conversations", href: "/conversations", icon: Chats }
 ]
 
 export default function Sidebar() {
 
-    const pathname = usePathname()
-    const router = useRouter()
-    const { logout } = useAuth()
+  const pathname = usePathname()
+  const router = useRouter()
+  const { logout } = useAuth()
 
-    const handleLogout = () => {
+  const [collapsed, setCollapsed] = useState(false)
 
-        logout()
-        router.push("/login")
+  const handleLogout = () => {
+    logout()
+    router.push("/login")
+  }
 
-    }
+  return (
 
-    return (
+    <aside
+      className={`h-screen flex flex-col border-r border-white/10
+      bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900
+      transition-all duration-300
+      ${collapsed ? "w-20" : "w-64"}`}
+    >
 
-        <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
+      {/* Header */}
 
-            {/* Logo */}
-            <div className="px-6 py-6 border-b border-gray-200">
+      <div className="flex items-center justify-between px-5 py-6 border-b border-white/10">
 
-                <h1 className="text-xl font-semibold tracking-tight">
-                    AI Scheduler
-                </h1>
+        {!collapsed && (
+          <div>
+            <h1 className="text-xl font-semibold text-white">
+              AI Scheduler
+            </h1>
 
-                <p className="text-sm text-gray-500">
-                    Interview Platform
-                </p>
+            <p className="text-sm text-gray-400">
+              Interview Platform
+            </p>
+          </div>
+        )}
 
-            </div>
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="p-2 rounded-lg hover:bg-white/10 transition"
+        >
+          {collapsed ? <PanelLeftOpen size={20}/> : <PanelLeftClose size={20}/>}
+        </button>
 
-            {/* Navigation */}
-            <nav className="flex-1 px-4 py-6 space-y-1">
+      </div>
 
-                {links.map((link) => {
 
-                    const Icon = link.icon
-                    const active = pathname === link.href
+      {/* Navigation */}
 
-                    return (
+      <nav className="flex-1 px-3 py-6 space-y-3">
 
-                        <Link
-                            key={link.name}
-                            href={link.href}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition
-       ${active
-                                    ? "bg-black text-white shadow-sm"
-                                    : "text-gray-700 hover:bg-gray-100"
-                                }`}
-                        >
+        {links.map((link) => {
 
-                            <Icon size={18} />
+          const Icon = link.icon
+          const active = pathname === link.href
 
-                            {link.name}
+          return (
 
-                        </Link>
+            <Link
+              key={link.name}
+              href={link.href}
+              className={`group relative flex items-center gap-4 px-4 py-3.5 rounded-xl text-[15px] font-medium transition-all
+              
+              ${active
+                ? "bg-white/10 text-white"
+                : "text-gray-400 hover:text-white hover:bg-white/5"
+              }`}
+            >
 
-                    )
+              {/* Active indicator */}
 
-                })}
+              {active && (
+                <span className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-r"></span>
+              )}
 
-            </nav>
+              {/* Icon */}
 
-            {/* Logout */}
-            <div className="p-4 border-t border-gray-200">
+              <div className={`p-2.5 rounded-lg transition
+                ${active ? "bg-indigo-500/20" : "group-hover:bg-white/10"}
+              `}>
+                <Icon size={24} weight="duotone" />
+              </div>
 
-  <button
-    onClick={handleLogout}
-    className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition"
-  >
+              {!collapsed && link.name}
 
-    <LogOut size={18} className="text-gray-500" />
+            </Link>
 
-    <span>Logout</span>
+          )
 
-  </button>
+        })}
 
-</div>
+      </nav>
 
-        </aside>
 
-    )
+      {/* Logout */}
 
+      <div className="p-3 border-t border-white/10">
+
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-4 w-full px-4 py-3.5 rounded-xl text-[15px] font-medium text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition"
+        >
+
+          <div className="p-2.5 rounded-lg bg-red-500/10">
+            <SignOut size={24} weight="duotone" />
+          </div>
+
+          {!collapsed && <span>Logout</span>}
+
+        </button>
+
+      </div>
+
+    </aside>
+
+  )
 }

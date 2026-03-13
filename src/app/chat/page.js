@@ -3,272 +3,268 @@
 import { useState, useRef, useEffect } from "react"
 import api from "@/lib/api"
 import DashboardLayout from "@/components/DashboardLayout"
+import { Send, Sparkles, CalendarDays } from "lucide-react"
 
 function formatDate(date) {
-
-    return new Date(date).toLocaleString("en-IN", {
-        weekday: "short",
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-    })
-
+ return new Date(date).toLocaleString("en-IN", {
+  weekday: "short",
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit"
+ })
 }
-
-
 
 export default function Chat() {
 
-    const [message, setMessage] = useState("")
-    const [messages, setMessages] = useState([])
-    const [loading, setLoading] = useState(false)
-    const [conversationId, setConversationId] = useState(null)
+ const [message, setMessage] = useState("")
+ const [messages, setMessages] = useState([])
+ const [loading, setLoading] = useState(false)
+ const [conversationId, setConversationId] = useState(null)
 
-    const startNewConversation = () => {
+ const bottomRef = useRef(null)
 
- const newId = crypto.randomUUID()
+ const startNewConversation = () => {
+  const newId = crypto.randomUUID()
+  setConversationId(newId)
+  localStorage.setItem("conversationId", newId)
+  setMessages([])
+ }
 
- setConversationId(newId)
+ useEffect(() => {
+  bottomRef.current?.scrollIntoView({ behavior: "smooth" })
+ }, [messages, loading])
 
- localStorage.setItem("conversationId", newId)
+ useEffect(() => {
 
- setMessages([])
+  const savedId = localStorage.getItem("conversationId")
 
-}
+  if (savedId) {
+   setConversationId(savedId)
+   loadHistory(savedId)
+  }
 
-    const bottomRef = useRef(null)
+ }, [])
 
-    // AUTO SCROLL EFFECT
-    useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: "smooth" })
-    }, [messages, loading])
+ const loadHistory = async (id) => {
 
-    useEffect(() => {
+  try {
 
-        const savedId = localStorage.getItem("conversationId")
+   const res = await api.get(`/conversation/${id}`)
 
-        if (savedId) {
-            setConversationId(savedId)
-            loadHistory(savedId)
-        }
+   const history = res.data.history.map(m => ({
+    role: m.role,
+    text: m.message
+   }))
 
-    }, [])
+   setMessages(history)
 
-    const loadHistory = async (id) => {
+  } catch (err) {
+   console.error("Failed to load history", err)
+  }
 
-        try {
+ }
 
-            const res = await api.get(`/conversation/${id}`)
+ const sendMessage = async () => {
 
-            const history = res.data.history.map(m => ({
-                role: m.role,
-                text: m.message
-            }))
+  if (!message.trim()) return
 
-            setMessages(history)
+  const userText = message
 
-        } catch (err) {
+  const userMsg = {
+   role: "user",
+   text: userText
+  }
 
-            console.error("Failed to load history", err)
+  setMessages(prev => [...prev, userMsg])
 
-        }
+  setMessage("")
+  setLoading(true)
 
+  try {
+
+   const res = await api.post("/chat", {
+    message: userText,
+    conversationId
+   })
+
+   const data = res.data
+
+   if (!conversationId && data.conversationId) {
+    setConversationId(data.conversationId)
+    localStorage.setItem("conversationId", data.conversationId)
+   }
+
+   const aiMsg = {
+    role: "assistant",
+    agent: data.agent || "Assistant",
+    text: data.message || "",
+    event: data.event || null
+   }
+
+   setMessages(prev => [...prev, aiMsg])
+
+  } catch (err) {
+
+   setMessages(prev => [
+    ...prev,
+    {
+     role: "assistant",
+     text: "Something went wrong"
     }
+   ])
 
-    const sendMessage = async () => {
+  } finally {
+   setLoading(false)
+  }
 
-        if (!message.trim()) return
+ }
 
-        const userText = message
+ return (
 
-        const userMsg = {
-            role: "user",
-            text: userText
-        }
+  <DashboardLayout>
 
-        setMessages(prev => [...prev, userMsg])
+   <div className="max-w-4xl mx-auto flex flex-col h-[calc(100vh-140px)]">
 
-        setMessage("")
-        setLoading(true)
+    {/* Header */}
 
-        try {
+    <div className="flex items-center justify-between mb-6">
 
-            const res = await api.post("/chat", {
-                message: userText,
-                conversationId
-            })
+     <div>
+      <h1 className="text-3xl font-semibold text-white">
+       AI Assistant
+      </h1>
+      <p className="text-gray-400 text-sm">
+       Ask questions or schedule interviews
+      </p>
+     </div>
 
-            const data = res.data
+     <button
+      onClick={startNewConversation}
+      className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-sm text-white transition"
+     >
+      New Conversation
+     </button>
 
-            if (!conversationId && data.conversationId) {
+    </div>
 
-                setConversationId(data.conversationId)
 
-                localStorage.setItem("conversationId", data.conversationId)
+    {/* Chat messages */}
 
-            }
+    <div className="flex-1 min-h-0 overflow-y-auto space-y-6 p-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-lg">
 
-            const aiMsg = {
-                role: "assistant",
-                agent: data.agent || "Assistant",
-                text: data.message || "",
-                event: data.event || null
-            }
+     {messages.map((msg, i) => {
 
-            setMessages(prev => [...prev, aiMsg])
+      if (msg.role === "user") {
 
-        } catch (err) {
+       return (
 
-            setMessages(prev => [
-                ...prev,
-                {
-                    role: "assistant",
-                    text: "Something went wrong"
-                }
-            ])
+        <div key={i} className="flex justify-end">
 
-        } finally {
+         <div className="bg-indigo-500 text-white px-4 py-3 rounded-2xl max-w-md text-sm shadow">
+          {msg.text}
+         </div>
 
-            setLoading(false)
+        </div>
 
-        }
+       )
 
-    }
+      }
 
-    return (
+      return (
 
-        <DashboardLayout>
+       <div key={i} className="flex flex-col gap-2 max-w-xl">
 
-            <div className="max-w-3xl mx-auto flex flex-col h-[80vh]">
+        <div className="flex items-center gap-2 text-xs text-gray-400">
+         <Sparkles className="w-3 h-3" />
+         {msg.agent || "Assistant"}
+        </div>
 
-               <div className="flex items-center justify-between mb-4">
+        <div className="bg-slate-800 text-gray-200 px-4 py-3 rounded-2xl text-sm">
 
- <h1 className="text-2xl font-bold">
-  AI Assistant
- </h1>
+         {msg.text}
 
- <button
-  onClick={startNewConversation}
-  className="text-sm px-3 py-1 border rounded-md"
- >
-  New Conversation
- </button>
+         {msg.event && (
 
-</div>
+          <div className="mt-4 p-4 rounded-xl bg-slate-900 border border-white/10 space-y-2">
 
-                {/* Chat messages */}
+           <div className="flex items-center gap-2 text-sm font-medium text-white">
+            <CalendarDays className="w-4 h-4" />
+            Interview Scheduled
+           </div>
 
-                <div className="flex-1 overflow-y-auto space-y-4 border p-4 rounded-lg bg-white">
+           <p className="text-sm text-gray-400">
+            {formatDate(msg.event.time)}
+           </p>
 
-                    {messages.map((msg, i) => {
+           {msg.event.meetingLink && (
 
-                        if (msg.role === "user") {
+            <a
+             href={msg.event.meetingLink}
+             target="_blank"
+             className="inline-block text-sm px-3 py-1 rounded-md bg-indigo-500 hover:bg-indigo-600 text-white"
+            >
+             Join Meeting
+            </a>
 
-                            return (
+           )}
 
-                                <div key={i} className="flex justify-end">
+          </div>
 
-                                    <div className="bg-black text-white p-3 rounded-lg max-w-xs">
-                                        {msg.text}
-                                    </div>
+         )}
 
-                                </div>
+        </div>
 
-                            )
+       </div>
 
-                        }
+      )
 
-                        return (
+     })}
 
-                            <div key={i} className="flex flex-col">
+     {loading && (
+      <div className="text-gray-400 text-sm">
+       AI is typing...
+      </div>
+     )}
 
-                                <span className="text-xs text-gray-500 mb-1">
-                                    {msg.agent || "Assistant"}
-                                </span>
+     <div ref={bottomRef}></div>
 
-                                <div className="bg-gray-100 p-3 rounded-lg max-w-md">
+    </div>
 
-                                    {msg.text}
 
-                                    {msg.event && (
+    {/* Input */}
 
- <div className="mt-3 p-3 border rounded bg-white space-y-2">
+    <div className="flex gap-3 mt-4">
 
-  <p className="text-sm font-semibold">
-   Interview Scheduled
-  </p>
+     <textarea
+      rows="2"
+      value={message}
+      onChange={(e) => setMessage(e.target.value)}
+      onKeyDown={(e) => {
+       if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault()
+        sendMessage()
+       }
+      }}
+      placeholder="Ask something..."
+      className="flex-1 resize-none rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+     />
 
-  <p className="text-sm">
-   Time: {msg.event.time}
-  </p>
+     <button
+      onClick={sendMessage}
+      className="px-5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white flex items-center gap-2"
+     >
+      <Send className="w-4 h-4" />
+      Send
+     </button>
 
-  {msg.event.meetingLink && (
+    </div>
 
-   <a
-    href={msg.event.meetingLink}
-    target="_blank"
-    className="text-blue-600 text-sm underline"
-   >
-    Join Meeting
-   </a>
+   </div>
 
-  )}
+  </DashboardLayout>
 
- </div>
-
-)}
-
-                                </div>
-
-                            </div>
-
-                        )
-
-                    })}
-
-                    {loading && (
-                        <div className="text-gray-500 text-sm">
-                            AI is typing...
-                        </div>
-                    )}
-
-                    {/* SCROLL TARGET */}
-                    <div ref={bottomRef}></div>
-
-                </div>
-
-                {/* Input */}
-
-                <div className="flex gap-2 mt-4">
-
-                    <input
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                                e.preventDefault()
-                                sendMessage()
-                            }
-                        }}
-                        placeholder="Ask something..."
-                        className="flex-1 border p-3 rounded-lg"
-                    />
-
-                    <button
-                        onClick={sendMessage}
-                        className="bg-black text-white px-4 rounded-lg"
-                    >
-                        Send
-                    </button>
-
-                </div>
-
-            </div>
-
-        </DashboardLayout>
-
-    )
+ )
 
 }

@@ -9,7 +9,7 @@ export function generateAccessToken(user) {
     return jwt.sign(
         { id: user._id, email: user.email },
         ACCESS_SECRET,
-        { expiresIn: "30m" }
+        { expiresIn: "1h" }
     )
 }
 

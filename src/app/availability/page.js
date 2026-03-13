@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import api from "@/lib/api"
 import DashboardLayout from "@/components/DashboardLayout"
+import { Clock } from "@phosphor-icons/react"
 
 export default function Availability() {
 
@@ -33,25 +34,40 @@ export default function Availability() {
 
   <DashboardLayout>
 
-   <div className="space-y-6">
+   <div className="space-y-8">
 
     {/* Header */}
-    <div>
-     <h1 className="text-2xl font-semibold text-gray-800">
-      Availability
-     </h1>
 
-     <p className="text-gray-500 text-sm">
-      Your available interview time slots
-     </p>
+    <div className="flex items-center justify-between">
+
+     <div>
+      <h1 className="text-3xl font-semibold text-white">
+       Availability
+      </h1>
+
+      <p className="text-gray-400 text-sm mt-1">
+       Your available interview time slots
+      </p>
+     </div>
+
     </div>
 
+
     {/* Slots */}
-    <div className="grid gap-3">
+
+    <div className="grid gap-4">
 
      {slots.length === 0 && (
-      <div className="bg-white border border-gray-200 rounded-lg p-6 text-center text-gray-500">
-       No slots available
+      <div className="bg-white/5 border border-white/10 rounded-xl p-10 text-center">
+
+       <div className="flex justify-center mb-3">
+        <Clock size={32} className="text-gray-400" />
+       </div>
+
+       <p className="text-gray-400">
+        No availability slots yet
+       </p>
+
       </div>
      )}
 
@@ -59,14 +75,27 @@ export default function Availability() {
 
       <div
        key={i}
-       className="bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between hover:shadow-sm transition"
+       className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-xl p-5 flex items-center justify-between transition hover:bg-white/10 hover:scale-[1.01]"
       >
 
-       <div className="text-gray-700 font-medium">
-        {formatDate(s)}
+       {/* Date */}
+
+       <div className="flex items-center gap-3">
+
+        <div className="p-2 rounded-lg bg-indigo-500/10">
+         <Clock size={20} className="text-indigo-400"/>
+        </div>
+
+        <div className="text-gray-200 font-medium">
+         {formatDate(s)}
+        </div>
+
        </div>
 
-       <span className="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-600">
+
+       {/* Status */}
+
+       <span className="text-xs bg-green-500/10 text-green-400 px-3 py-1 rounded-full">
         Available
        </span>
 

@@ -6,15 +6,6 @@ import Loader from "@/components/Loader"
 import DashboardLayout from "@/components/DashboardLayout"
 
 import {
- Card,
- CardContent,
- CardHeader,
- CardTitle
-} from "@/components/ui/card"
-
-import { Button } from "@/components/ui/button"
-
-import {
  CalendarDays,
  Clock,
  User,
@@ -24,7 +15,6 @@ import {
 } from "lucide-react"
 
 function formatDate(date){
-
  return new Date(date).toLocaleString("en-IN",{
   weekday:"short",
   day:"numeric",
@@ -33,7 +23,6 @@ function formatDate(date){
   hour:"2-digit",
   minute:"2-digit"
  })
-
 }
 
 export default function Calendar(){
@@ -49,47 +38,30 @@ export default function Calendar(){
  },[])
 
  const fetchEvents = async()=>{
-
   try{
-
+    console.log("TOKEN:", localStorage.getItem("accessToken")) 
    const res = await api.get("/calendar")
-
    setEvents(res.data.events || [])
-
   }catch(err){
-
-   console.error("Failed to fetch events",err)
-
+   console.error(err)
   }finally{
-
    setLoading(false)
-
   }
-
  }
 
  const deleteEvent = async(id)=>{
-
   try{
-
    await api.delete(`/calendar/${id}`)
-
    fetchEvents()
-
   }catch(err){
-
-   console.error("Delete failed",err)
-
+   console.error(err)
   }
-
  }
 
  const rescheduleEvent = async()=>{
-
   if(!newTime) return
 
   try{
-
    await api.post("/reschedule",{
     eventId:rescheduleId,
     newTime
@@ -97,15 +69,11 @@ export default function Calendar(){
 
    setRescheduleId(null)
    setNewTime("")
-
    fetchEvents()
 
   }catch(err){
-
-   console.error("Reschedule failed",err)
-
+   console.error(err)
   }
-
  }
 
  if(loading) return <Loader/>
@@ -114,111 +82,109 @@ export default function Calendar(){
 
   <DashboardLayout>
 
-   <div className="space-y-6">
+   <div className="space-y-10">
+
+    {/* Header */}
 
     <div>
 
-     <h1 className="text-2xl font-bold">
+     <h1 className="text-3xl font-semibold text-white">
       Interview Calendar
      </h1>
 
-     <p className="text-muted-foreground">
-      Manage all scheduled interviews
+     <p className="text-gray-400 mt-1">
+      Manage and track all scheduled interviews
      </p>
 
     </div>
 
+
     {events.length === 0 && (
 
-     <Card>
+     <div className="bg-white/5 border border-white/10 rounded-2xl p-12 text-center text-gray-400">
 
-      <CardContent className="p-6 text-center text-muted-foreground">
+      <CalendarDays className="mx-auto mb-3 w-8 h-8 opacity-60"/>
 
-       No interviews scheduled yet.
+      No interviews scheduled yet
 
-      </CardContent>
-
-     </Card>
+     </div>
 
     )}
 
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+
+    {/* Cards */}
+
+    <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
 
      {events.map(e=>(
 
-      <Card key={e._id} className="hover:shadow-lg transition">
+      <div
+       key={e._id}
+       className="bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:bg-white/10 transition"
+      >
 
-       <CardHeader className="flex flex-row items-center justify-between">
+       {/* Top */}
 
-        <CardTitle className="text-sm font-medium">
-         Interview Scheduled
-        </CardTitle>
+       <div className="space-y-5">
 
-        <CalendarDays className="w-5 h-5 text-muted-foreground"/>
+        <div className="flex items-center justify-between">
 
-       </CardHeader>
+         <h3 className="text-sm font-semibold text-gray-200">
+          Interview Scheduled
+         </h3>
 
-       <CardContent className="space-y-4">
+         <CalendarDays className="w-5 h-5 text-indigo-400"/>
+
+        </div>
+
 
         {/* Candidate */}
 
-        <div className="flex items-center gap-2 text-sm font-medium">
+        <div className="space-y-2 text-sm">
 
-         <User className="w-4 h-4"/>
+         <div className="flex items-center gap-2 text-gray-200">
 
-         {e.candidateName}
+          <User className="w-4 h-4 text-indigo-400"/>
 
-        </div>
+          {e.candidateName}
 
-        {/* Email */}
+         </div>
 
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+         <div className="flex items-center gap-2 text-gray-400">
 
-         <Mail className="w-4 h-4"/>
+          <Mail className="w-4 h-4"/>
 
-         {e.email}
+          {e.email}
 
-        </div>
+         </div>
 
-        {/* Interviewer */}
+         <div className="flex items-center gap-2 text-gray-400">
 
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Briefcase className="w-4 h-4"/>
 
-         <User className="w-4 h-4"/>
+          {e.interviewType}
 
-         Interviewer: {e.interviewer}
+         </div>
 
-        </div>
+         <div className="flex items-center gap-2 text-gray-200">
 
-        {/* Interview Type */}
+          <Clock className="w-4 h-4 text-indigo-400"/>
 
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          {formatDate(e.time)}
 
-         <Briefcase className="w-4 h-4"/>
-
-         {e.interviewType}
+         </div>
 
         </div>
 
-        {/* Time */}
-
-        <div className="flex items-center gap-2 text-sm">
-
-         <Clock className="w-4 h-4"/>
-
-         {formatDate(e.time)}
-
-        </div>
 
         {/* Status */}
 
-        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
-
+        <span className="inline-block text-xs bg-green-500/10 text-green-400 px-3 py-1 rounded-full w-fit">
          {e.status}
-
         </span>
 
-        {/* Meeting Link */}
+
+        {/* Meeting Button */}
 
         {e.meetingLink && (
 
@@ -226,7 +192,7 @@ export default function Calendar(){
           href={e.meetingLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 text-blue-600 text-sm underline"
+          className="flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium py-2 rounded-lg transition"
          >
 
           <Video className="w-4 h-4"/>
@@ -237,55 +203,55 @@ export default function Calendar(){
 
         )}
 
-        {/* Reschedule UI */}
+       </div>
 
-        {rescheduleId === e._id && (
 
-         <div className="space-y-2">
+       {/* Reschedule */}
 
-          <input
-           type="datetime-local"
-           value={newTime}
-           onChange={(e)=>setNewTime(e.target.value)}
-           className="border rounded p-2 w-full"
-          />
+       {rescheduleId === e._id && (
 
-          <Button
-           size="sm"
-           onClick={rescheduleEvent}
-          >
-           Confirm Reschedule
-          </Button>
+        <div className="mt-4 space-y-3">
 
-         </div>
+         <input
+          type="datetime-local"
+          value={newTime}
+          onChange={(e)=>setNewTime(e.target.value)}
+          className="bg-slate-900 border border-white/10 rounded-lg p-2 w-full text-sm"
+         />
 
-        )}
-
-        {/* Actions */}
-
-        <div className="flex gap-2">
-
-         <Button
-          variant="outline"
-          size="sm"
-          onClick={()=>setRescheduleId(e._id)}
+         <button
+          onClick={rescheduleEvent}
+          className="w-full bg-indigo-500 hover:bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium"
          >
-          Reschedule
-         </Button>
-
-         <Button
-          variant="destructive"
-          size="sm"
-          onClick={()=>deleteEvent(e._id)}
-         >
-          Cancel
-         </Button>
+          Confirm Reschedule
+         </button>
 
         </div>
 
-       </CardContent>
+       )}
 
-      </Card>
+
+       {/* Actions */}
+
+       <div className="flex gap-3 mt-6">
+
+        <button
+         onClick={()=>setRescheduleId(e._id)}
+         className="flex-1 border border-white/10 hover:bg-white/10 text-sm py-2 rounded-lg transition"
+        >
+         Reschedule
+        </button>
+
+        <button
+         onClick={()=>deleteEvent(e._id)}
+         className="flex-1 bg-red-500/10 text-red-400 hover:bg-red-500/20 text-sm py-2 rounded-lg transition"
+        >
+         Cancel
+        </button>
+
+       </div>
+
+      </div>
 
      ))}
 
@@ -296,5 +262,4 @@ export default function Calendar(){
   </DashboardLayout>
 
  )
-
 }

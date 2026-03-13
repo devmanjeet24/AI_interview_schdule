@@ -127,3 +127,92 @@
     @apply font-sans;
   }
 }
+
+
+/* my css  */
+
+
+:root {
+  --background: #0f172a;
+  --foreground: #ffffff;
+}
+
+/* Body */
+
+body {
+  background: radial-gradient(circle at 20% 20%, #6366f1 0%, transparent 40%),
+              radial-gradient(circle at 80% 80%, #8b5cf6 0%, transparent 40%),
+              #0f172a;
+  color: var(--foreground);
+  font-family: var(--font-geist-sans);
+}
+
+/* App Wrapper */
+
+.app-container {
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Smooth UI */
+
+* {
+  transition: all 0.25s ease;
+}
+
+/* Glass UI */
+
+.glass-card {
+  backdrop-filter: blur(14px);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 20px;
+}
+
+/* Cartoon style soft shadow */
+
+.soft-shadow {
+  box-shadow: 0 15px 40px rgba(0,0,0,0.35);
+}
+
+/* Cute hover effect */
+
+.hover-pop:hover {
+  transform: translateY(-3px) scale(1.02);
+}
+
+/* my global css ends  */
+
+
+@keyframes swing {
+  0% {
+    transform: rotate(-8deg);
+  }
+  50% {
+    transform: rotate(8deg);
+  }
+  100% {
+    transform: rotate(-8deg);
+  }
+}
+
+.swing {
+  animation: swing 4s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+@keyframes floatBlob {
+  0% {
+    transform: translate(0px,0px) scale(1);
+  }
+  50% {
+    transform: translate(40px,-30px) scale(1.1);
+  }
+  100% {
+    transform: translate(0px,0px) scale(1);
+  }
+}
+
+.blob{
+  animation: floatBlob 14s ease-in-out infinite;
+}
