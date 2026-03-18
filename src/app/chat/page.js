@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import api from "@/lib/api"
 import DashboardLayout from "@/components/DashboardLayout"
 import { Send, Sparkles, CalendarDays } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 function formatDate(date) {
  return new Date(date).toLocaleString("en-IN", {
@@ -24,6 +25,7 @@ export default function Chat() {
  const [conversationId, setConversationId] = useState(null)
 
  const bottomRef = useRef(null)
+ const router = useRouter()
 
  const startNewConversation = () => {
   const newId = crypto.randomUUID()
@@ -104,6 +106,23 @@ export default function Chat() {
    }
 
    setMessages(prev => [...prev, aiMsg])
+
+   // ✅🔥 MAIN FIX: Interview scheduled → reset + redirect
+   if (data.event) {
+
+    setTimeout(() => {
+
+     // clear chat
+     setMessages([])
+     setConversationId(null)
+     localStorage.removeItem("conversationId")
+
+     // redirect to dashboard
+     router.push("/dashboard")
+
+    }, 1500)
+
+   }
 
   } catch (err) {
 
@@ -266,5 +285,4 @@ export default function Chat() {
   </DashboardLayout>
 
  )
-
 }

@@ -49,8 +49,8 @@ export default function ConversationHistory(){
        <div
         className={`p-3 rounded-lg max-w-xs ${
          isUser
-          ? "bg-black text-white"
-          : "bg-gray-100"
+          ? "bg-[#253560] text-white"
+          : "bg-gray-500"
         }`}
        >
 

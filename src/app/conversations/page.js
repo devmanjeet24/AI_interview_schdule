@@ -9,17 +9,11 @@ export default function Conversations(){
 
  const [conversations,setConversations] = useState([])
 
- useEffect(()=>{
-  fetchConversations()
- },[])
-
  const fetchConversations = async()=>{
 
   try{
 
    const res = await api.get("/conversation")
-
-   console.log("API conversations:",res.data)
 
    setConversations(res.data.conversations || [])
 
@@ -30,6 +24,26 @@ export default function Conversations(){
   }
 
  }
+
+ // ✅ auto refresh on mount
+ useEffect(()=>{
+  fetchConversations()
+ },[])
+
+ // ✅ refresh every time page focus
+ useEffect(()=>{
+
+  const handleFocus = () => {
+   fetchConversations()
+  }
+
+  window.addEventListener("focus", handleFocus)
+
+  return () => {
+   window.removeEventListener("focus", handleFocus)
+  }
+
+ },[])
 
  return(
 
@@ -50,6 +64,7 @@ export default function Conversations(){
     <div className="grid gap-4">
 
      {conversations.map((conv)=>(
+
       <Link
        key={conv.id}
        href={`/conversations/${conv.id}`}
@@ -69,6 +84,7 @@ export default function Conversations(){
        </p>
 
       </Link>
+
      ))}
 
     </div>
