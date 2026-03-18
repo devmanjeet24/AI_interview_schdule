@@ -57,7 +57,7 @@ export default function Sidebar() {
             </h1>
 
             <p className="text-sm text-gray-400">
-              Interview Platform(MS)
+              Interview Platform(AIMS)
             </p>
           </div>
         )}
