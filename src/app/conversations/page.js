@@ -68,10 +68,10 @@ export default function Conversations(){
       <Link
        key={conv.id}
        href={`/conversations/${conv.id}`}
-       className="border p-4 rounded hover:bg-gray-50"
+       className="border p-4 rounded-lg hover:bg-gray-50"
       >
 
-       <p className="font-medium">
+       <p className="font-semibold text-[#0a39c7] text-[18px] mb-1">
         Conversation
        </p>
 
