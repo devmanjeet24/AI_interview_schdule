@@ -53,7 +53,7 @@ export default function Sidebar() {
         {!collapsed && (
           <div>
             <h1 className="text-xl font-semibold text-white">
-              AI Scheduler
+              AI Scheduler(MS)
             </h1>
 
             <p className="text-sm text-gray-400">

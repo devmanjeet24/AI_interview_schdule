@@ -8,7 +8,8 @@ export async function createMeetingLink(){
 
   await connectDB()
 
-  const user = await User.findOne()
+  // ✅ latest user (single user app fix)
+  const user = await User.findOne().sort({ createdAt: -1 })
 
   if(!user || !user.googleTokens){
    throw new Error("Google not connected")
@@ -32,12 +33,15 @@ export async function createMeetingLink(){
    conferenceDataVersion:1,
    requestBody:{
     summary:"Interview Meeting",
+
     start:{
      dateTime:new Date().toISOString()
     },
+
     end:{
      dateTime:new Date(Date.now()+30*60000).toISOString()
     },
+
     conferenceData:{
      createRequest:{
       requestId:Math.random().toString(36).substring(2,10),
@@ -49,13 +53,14 @@ export async function createMeetingLink(){
    }
   })
 
-  return event.data.hangoutLink
+  // ✅ SAFE RETURN
+  return event.data?.hangoutLink || null
 
  }catch(err){
 
   console.error("Google Meet error:",err)
 
-  return null // ❗ fallback (important)
+  return null // ❗ important fallback
 
  }
 
