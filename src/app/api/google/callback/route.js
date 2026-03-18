@@ -2,18 +2,30 @@ import { getOAuthClient, saveTokens } from "@/lib/googleAuth"
 
 export async function GET(req){
 
- const { searchParams } = new URL(req.url)
- const code = searchParams.get("code")
+ try{
 
- const client = getOAuthClient()
+  const { searchParams } = new URL(req.url)
+  const code = searchParams.get("code")
 
- const { tokens } = await client.getToken(code)
+  const client = getOAuthClient()
 
- // ✅ SAVE TOKENS (important fix)
- saveTokens(tokens)
+  const { tokens } = await client.getToken(code)
 
- return Response.json({
-  message:"Google connected successfully"
- })
+  saveTokens(tokens)
+
+  return Response.json({
+   message:"Google connected successfully"
+  })
+
+ }catch(err){
+
+  console.error("Callback error:",err)
+
+  return Response.json(
+   { error:"Google connection failed" },
+   { status:500 }
+  )
+
+ }
 
 }
