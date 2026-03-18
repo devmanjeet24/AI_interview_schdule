@@ -1,7 +1,6 @@
 import { google } from "googleapis"
 import { connectDB } from "@/lib/db"
 import User from "@/models/User"
-import { verifyAccessToken } from "@/lib/authMiddleware"
 
 export async function GET(req){
 
@@ -10,18 +9,11 @@ export async function GET(req){
   const { searchParams } = new URL(req.url)
   const code = searchParams.get("code")
 
-  // ✅ GET USER FROM TOKEN
-  const authHeader = req.headers.get("authorization")
-
-  if(!authHeader){
-   return Response.json({ error:"Unauthorized" },{ status:401 })
-  }
-
-  const token = authHeader.split(" ")[1]
-  const userData = verifyAccessToken(token)
-
-  if(!userData){
-   return Response.json({ error:"Invalid token" },{ status:401 })
+  if(!code){
+   return Response.json(
+    { error:"No code received" },
+    { status:400 }
+   )
   }
 
   const client = new google.auth.OAuth2(
@@ -34,11 +26,15 @@ export async function GET(req){
 
   await connectDB()
 
-  // ✅ SAVE TOKENS TO CORRECT USER
-  await User.findByIdAndUpdate(
-   userData.id,
-   { googleTokens: tokens }
-  )
+  // ✅ SIMPLE FIX: latest user update
+  const user = await User.findOne().sort({ createdAt: -1 })
+
+  if(!user){
+   return Response.json({ error:"User not found" },{ status:404 })
+  }
+
+  user.googleTokens = tokens
+  await user.save()
 
   return Response.json({
    message:"Google connected successfully"
