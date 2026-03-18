@@ -1,5 +1,6 @@
 import { google } from "googleapis"
-import { saveTokens } from "@/lib/googleAuth"
+import { connectDB } from "@/lib/db"
+import User from "@/models/User"
 
 export async function GET(req){
 
@@ -8,14 +9,6 @@ export async function GET(req){
   const { searchParams } = new URL(req.url)
   const code = searchParams.get("code")
 
-  if(!code){
-   return Response.json(
-    { error: "No code received" },
-    { status: 400 }
-   )
-  }
-
-  // ✅ create fresh client (IMPORTANT FIX)
   const client = new google.auth.OAuth2(
    process.env.GOOGLE_CLIENT_ID,
    process.env.GOOGLE_CLIENT_SECRET,
@@ -24,8 +17,13 @@ export async function GET(req){
 
   const { tokens } = await client.getToken(code)
 
-  // save tokens
-  saveTokens(tokens)
+  await connectDB()
+
+  // ⚠️ TEMP: first user update (later improve with auth)
+  await User.updateOne(
+   {},
+   { googleTokens: tokens }
+  )
 
   return Response.json({
    message:"Google connected successfully"

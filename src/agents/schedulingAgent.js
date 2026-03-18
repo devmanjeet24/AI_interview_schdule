@@ -25,12 +25,12 @@ import { createMeetingLink } from "@/tools/meetingLinkTool" // ✅ ADD THIS
 
 export async function schedulingAgent(data){
 
- const meetingLink = await createMeetingLink() // already correct
+const meetingLink = await createMeetingLink()
 
- const event = await createEvent({
-  ...data,
-  meetingLink
- })
+const event = await createEvent({
+ ...data,
+ meetingLink: meetingLink || null // ❗ safe fallback
+})
 
  removeSlot(data.time)
 

@@ -1,50 +1,61 @@
 import { google } from "googleapis"
-import { v4 as uuid } from "uuid"
-import { getOAuthClient } from "@/lib/googleAuth"
+import { connectDB } from "@/lib/db"
+import User from "@/models/User"
 
 export async function createMeetingLink(){
 
  try{
 
-  const client = await getOAuthClient()
+  await connectDB()
 
-  const calendar = google.calendar({ version:"v3", auth: client })
+  const user = await User.findOne()
 
-  const start = new Date()
-  const end = new Date(Date.now() + 30 * 60 * 1000)
+  if(!user || !user.googleTokens){
+   throw new Error("Google not connected")
+  }
+
+  const client = new google.auth.OAuth2(
+   process.env.GOOGLE_CLIENT_ID,
+   process.env.GOOGLE_CLIENT_SECRET,
+   process.env.GOOGLE_REDIRECT_URI
+  )
+
+  client.setCredentials(user.googleTokens)
+
+  const calendar = google.calendar({
+   version:"v3",
+   auth:client
+  })
 
   const event = await calendar.events.insert({
-   calendarId: "primary",
-   conferenceDataVersion: 1,
-   requestBody: {
-    summary: "Interview Meeting",
-    start: { dateTime: start.toISOString() },
-    end: { dateTime: end.toISOString() },
-    conferenceData: {
-     createRequest: {
-      requestId: uuid()
+   calendarId:"primary",
+   conferenceDataVersion:1,
+   requestBody:{
+    summary:"Interview Meeting",
+    start:{
+     dateTime:new Date().toISOString()
+    },
+    end:{
+     dateTime:new Date(Date.now()+30*60000).toISOString()
+    },
+    conferenceData:{
+     createRequest:{
+      requestId:Math.random().toString(36).substring(2,10),
+      conferenceSolutionKey:{
+       type:"hangoutsMeet"
+      }
      }
     }
    }
   })
 
-  const meetLink =
-   event.data.conferenceData?.entryPoints?.find(
-    e => e.entryPointType === "video"
-   )?.uri
-
-  if(!meetLink){
-   throw new Error("Meet link not generated")
-  }
-
-  return meetLink
+  return event.data.hangoutLink
 
  }catch(err){
 
   console.error("Google Meet error:",err)
 
-  // ❌ THROW mat karo (chat break hota hai)
-  return "Meeting link unavailable. Please reconnect Google."
+  return null // ❗ fallback (important)
 
  }
 
